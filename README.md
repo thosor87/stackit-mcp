@@ -12,8 +12,7 @@ MCP servers for STACKIT — letting Claude and other AI assistants work with STA
 | Package | Description | npm |
 |---------|-------------|-----|
 | [pricing/](pricing/) | Multi-stage cost estimates with live pricing and Excel export | [![npm](https://img.shields.io/npm/v/%40stackit-mcp%2Fpricing?style=flat-square)](https://www.npmjs.com/package/@stackit-mcp/pricing) |
-
-More packages planned — see [Contributing](#contributing).
+| [resources/](resources/) | List and manage STACKIT resources (servers, databases, clusters, storage) | 🚧 in development |
 
 ---
 
