@@ -129,7 +129,7 @@ describe('tools', () => {
       const result = await handleExportEstimate({ estimate_id });
       expect(result.total_month_eur).toBeGreaterThan(0);
       expect(result.total_year_eur).toBeCloseTo(result.total_month_eur * 12, 1);
-      expect(result.calculator_url).toContain('thosor87.github.io');
+      expect(result.markdown).toContain("Gesamt");
       expect(result.groups).toHaveLength(1);
       expect(result.groups[0].name).toBe('Prod');
     });

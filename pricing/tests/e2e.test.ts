@@ -70,7 +70,7 @@ describe('E2E: TYPO3 3-Stage estimate using bundled prices', () => {
     expect(result.groups.map(g => g.name).sort()).toEqual(['Dev', 'Production', 'Staging']);
     expect(result.total_month_eur).toBeGreaterThan(0);
     expect(result.total_year_eur).toBeCloseTo(result.total_month_eur * 12, 0);
-    expect(result.calculator_url).toContain("thosor87.github.io");
+    expect(result.markdown).toContain("Gesamt");
     expect(result.price_source).toMatch(/^(live|cache|bundle)$/);
 
     // Log summary for visibility
@@ -79,7 +79,7 @@ describe('E2E: TYPO3 3-Stage estimate using bundled prices', () => {
     for (const g of result.groups) {
       console.log(`  ${g.name}: €${g.subtotal_month_eur}/month`);
     }
-    console.log(`URL: ${result.calculator_url}`);
+    console.log(`URL: (removed)`);
     console.log(`Source: ${result.price_source} (${result.price_date})`);
   }, 30_000);
 });
