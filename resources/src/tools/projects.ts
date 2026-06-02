@@ -13,7 +13,7 @@ interface Project {
 function decodeJwtEmail(token: string): string | null {
   try {
     const payload = token.split('.')[1];
-    const padded = payload + '='.repeat(-payload.length % 4);
+    const padded = payload + '='.repeat((4 - payload.length % 4) % 4);
     const data = JSON.parse(Buffer.from(padded, 'base64url').toString('utf8'));
     return data.email ?? data.sub ?? null;
   } catch { return null; }
