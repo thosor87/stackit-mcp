@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open in STACKIT Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+      padding: 32px;
+      max-width: 520px;
+      width: 100%;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      color: #00a0af;
+      font-weight: 700;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: 22px;
+      color: #111;
+      margin-bottom: 6px;
+    }
+    .total {
+      font-size: 32px;
+      font-weight: 700;
+      color: #00a0af;
+      margin: 12px 0 24px;
+    }
+    .total span { font-size: 14px; font-weight: 400; color: #666; margin-left: 4px; }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .step-num {
+      background: #e8f7f8;
+      color: #00a0af;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+    .step-num.done { background: #00a0af; color: white; }
+    .step-content { flex: 1; padding-top: 4px; }
+    .step-title { font-weight: 600; font-size: 14px; color: #333; margin-bottom: 6px; }
+    .open-btn {
+      width: 100%;
+      padding: 14px;
+      background: #00a0af;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .open-btn:hover { background: #008a98; }
+    .open-btn:disabled { background: #ccc; cursor: default; }
+    .service-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .service-btn {
+      padding: 8px 14px;
+      background: #0a5eb0;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .service-btn:hover { background: #084d94; }
+    .service-btn:disabled { background: #b0c4d8; cursor: default; }
+    .service-btn.added {
+      background: #2e7d32;
+    }
+    .status-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 10px;
+      min-height: 20px;
+    }
+    .countdown {
+      display: inline-block;
+      font-weight: 700;
+      color: #00a0af;
+    }
+    .divider { border: none; border-top: 1px solid #eee; margin: 20px 0; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg>
+    stackit-mcp
+  </div>
+
+  <h1 id="estimateName">STACKIT Estimate</h1>
+  <div class="total" id="totalCost" style="display:none"></div>
+
+  <hr class="divider">
+
+  <!-- Step 1 -->
+  <div class="step">
+    <div class="step-num" id="step1num">1</div>
+    <div class="step-content">
+      <div class="step-title">Open STACKIT Calculator</div>
+      <button class="open-btn" id="openBtn" onclick="openCalculator()">
+        Open calculator.stackit.cloud →
+      </button>
+      <div class="status-text" id="statusText"></div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step">
+    <div class="step-num" id="step2num">2</div>
+    <div class="step-content">
+      <div class="step-title">Add services (one click each)</div>
+      <div class="service-grid" id="serviceGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const DISPLAY_NAMES = {
+    'server': 'Server',
+    'object-storage': 'Object Storage',
+    'block-storage': 'Block Storage',
+    'ske': 'Kubernetes Engine',
+    'postgresql-flex': 'PostgreSQL Flex',
+    'mariadb': 'MariaDB',
+    'redis': 'Redis',
+    'application-load-balancer': 'Load Balancer',
+    'public-ip-address': 'Public IP',
+  };
+
+  const CALC_WIN = 'stackit_calc';
+  const params = new URLSearchParams(window.location.search);
+  const services = (params.get('services') || '').split(',').filter(Boolean);
+  const label = params.get('label') || 'STACKIT Estimate';
+  const total = params.get('total');
+
+  document.getElementById('estimateName').textContent = label;
+  if (total) {
+    const el = document.getElementById('totalCost');
+    el.style.display = 'block';
+    el.innerHTML = '€' + parseFloat(total).toLocaleString('de-DE', {minimumFractionDigits:2}) + '<span>/ month</span>';
+  }
+
+  // Render disabled service buttons initially
+  renderButtons(false);
+
+  function renderButtons(enabled) {
+    const grid = document.getElementById('serviceGrid');
+    grid.innerHTML = services.map(s =>
+      `<button class="service-btn" id="btn_${s}" ${enabled ? '' : 'disabled'}
+         onclick="addService('${s}')">${DISPLAY_NAMES[s] || s}</button>`
+    ).join('');
+  }
+
+  let calcReady = false;
+
+  function openCalculator() {
+    document.getElementById('openBtn').disabled = true;
+    document.getElementById('step1num').classList.add('done');
+    document.getElementById('step1num').textContent = '✓';
+
+    // Open calculator WITHOUT addService params — registry loads cleanly
+    window.open('https://calculator.stackit.cloud/', CALC_WIN);
+
+    // Count down 3 seconds, then enable service buttons
+    let remaining = 3;
+    const statusEl = document.getElementById('statusText');
+    statusEl.innerHTML = 'Loading… ready in <span class="countdown" id="cd">' + remaining + '</span>s';
+
+    const interval = setInterval(() => {
+      remaining--;
+      const cd = document.getElementById('cd');
+      if (cd) cd.textContent = remaining;
+      if (remaining <= 0) {
+        clearInterval(interval);
+        calcReady = true;
+        statusEl.textContent = '✓ Calculator ready — click services below';
+        document.getElementById('step2num').classList.add('done');
+        renderButtons(true);
+      }
+    }, 1000);
+  }
+
+  function addService(serviceId) {
+    if (!calcReady) return;
+    // Navigate the ALREADY-OPEN calculator window — in-app Angular navigation, no race condition
+    window.open('https://calculator.stackit.cloud/?addService=' + encodeURIComponent(serviceId), CALC_WIN);
+    const btn = document.getElementById('btn_' + serviceId);
+    if (btn) {
+      btn.classList.add('added');
+      btn.textContent = '✓ ' + btn.textContent;
+    }
+  }
+</script>
+</body>
+</html>
