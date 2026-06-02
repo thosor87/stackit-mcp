@@ -145,7 +145,12 @@
   <div class="step">
     <div class="step-num" id="step2num">2</div>
     <div class="step-content">
-      <div class="step-title">Add services (one click each)</div>
+      <div class="step-title">Add services</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+        <button class="open-btn" id="addAllBtn" disabled onclick="addAllServices()" style="padding:10px 18px; font-size:14px;">
+          Add all at once
+        </button>
+      </div>
       <div class="service-grid" id="serviceGrid"></div>
     </div>
   </div>
@@ -210,8 +215,9 @@
       if (remaining <= 0) {
         clearInterval(interval);
         calcReady = true;
-        statusEl.textContent = '✓ Calculator ready — click services below';
+        statusEl.textContent = '✓ Calculator ready — add all at once or one by one';
         document.getElementById('step2num').classList.add('done');
+        document.getElementById('addAllBtn').disabled = false;
         renderButtons(true);
       }
     }, 1000);
@@ -226,6 +232,17 @@
       btn.classList.add('added');
       btn.textContent = '✓ ' + btn.textContent;
     }
+  }
+
+  async function addAllServices() {
+    if (!calcReady) return;
+    document.getElementById('addAllBtn').disabled = true;
+    document.getElementById('addAllBtn').textContent = 'Adding…';
+    for (const serviceId of services) {
+      addService(serviceId);
+      await new Promise(r => setTimeout(r, 350));
+    }
+    document.getElementById('addAllBtn').textContent = '✓ All added — confirm each in the calculator';
   }
 </script>
 </body>
