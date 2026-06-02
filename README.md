@@ -8,32 +8,19 @@ MCP servers for STACKIT — letting Claude and other AI assistants work with STA
 
 | Package | Description | npm |
 |---------|-------------|-----|
-| [pricing/](pricing/) | Create cost estimates from live STACKIT pricing | [![npm](https://img.shields.io/npm/v/%40stackit-mcp%2Fpricing?style=flat-square)](https://www.npmjs.com/package/@stackit-mcp/pricing) |
+| [pricing/](pricing/) | Multi-stage cost estimates with live pricing and Excel export | [![npm](https://img.shields.io/npm/v/%40stackit-mcp%2Fpricing?style=flat-square)](https://www.npmjs.com/package/@stackit-mcp/pricing) |
 
 ---
 
 ## Quick start
 
 ```bash
-# Add the pricing MCP to Claude Code
 claude mcp add stackit-pricing -- npx -y @stackit-mcp/pricing@latest
 ```
 
-Or add it manually to `~/.claude.json`:
+Then ask Claude:
 
-```json
-{
-  "mcpServers": {
-    "stackit-pricing": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@stackit-mcp/pricing@latest"]
-    }
-  }
-}
-```
-
-Then ask Claude: *"Erstelle eine STACKIT-Kostenkalkulation für eine TYPO3-Website mit Dev, Staging und Produktion."*
+> *"Erstelle eine STACKIT-Kostenkalkulation für eine TYPO3-Website mit Dev, Staging und Produktion. Speichere als Excel."*
 
 ---
 
@@ -41,7 +28,7 @@ Then ask Claude: *"Erstelle eine STACKIT-Kostenkalkulation für eine TYPO3-Websi
 
 ```
 @stackit-mcp/
-└── pricing/    # @stackit-mcp/pricing — STACKIT cost estimates
+└── pricing/    @stackit-mcp/pricing — STACKIT cost estimates
 ```
 
 ---
