@@ -74,7 +74,7 @@ server.tool(
   'Save a STACKIT estimate as .md and .csv files to disk (default: /tmp)',
   {
     estimate_id: z.string().describe('Estimate ID from create_estimate'),
-    directory: z.string().optional().describe('Target directory (default: /tmp)'),
+    directory: z.string().optional().describe('Target directory (default: ~/Downloads)'),
   },
   async ({ estimate_id, directory }) => {
     const result = await handleSaveEstimate({ estimate_id, directory });

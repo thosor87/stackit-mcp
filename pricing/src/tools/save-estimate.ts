@@ -18,7 +18,7 @@ export async function handleSaveEstimate(input: SaveEstimateInput) {
   const estimate = getEstimate(input.estimate_id);
   if (!estimate) throw new Error(`Estimate ${input.estimate_id} not found`);
 
-  const dir = resolve(input.directory ?? '/tmp');
+  const dir = resolve(input.directory ?? join(homedir(), 'Downloads'));
   mkdirSync(dir, { recursive: true });
 
   const base = sanitize(estimate.name) || 'estimate';
