@@ -7,6 +7,7 @@ import { handleGetServiceFields } from './tools/get-service-fields.js';
 import { handleCreateEstimate } from './tools/create-estimate.js';
 import { handleAddService } from './tools/add-service.js';
 import { handleExportEstimate } from './tools/export-estimate.js';
+import { handleSaveEstimate } from './tools/save-estimate.js';
 
 const server = new McpServer({
   name: 'stackit-mcp',
@@ -64,6 +65,19 @@ server.tool(
   { estimate_id: z.string().describe('Estimate ID from create_estimate') },
   async ({ estimate_id }) => {
     const result = await handleExportEstimate({ estimate_id });
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+server.tool(
+  'save_estimate',
+  'Save a STACKIT estimate as .md and .csv files to disk (default: /tmp)',
+  {
+    estimate_id: z.string().describe('Estimate ID from create_estimate'),
+    directory: z.string().optional().describe('Target directory (default: /tmp)'),
+  },
+  async ({ estimate_id, directory }) => {
+    const result = await handleSaveEstimate({ estimate_id, directory });
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );
