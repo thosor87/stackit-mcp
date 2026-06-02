@@ -1,5 +1,5 @@
 import { getEstimate } from '../estimate/store.js';
-import { buildCalculatorUrl } from '../calculator/link-builder.js';
+import { buildCalculatorServiceList } from '../calculator/link-builder.js';
 import { loadPrices } from '../pricing/loader.js';
 import type { EstimateService } from '../types.js';
 
@@ -40,16 +40,17 @@ export async function handleExportEstimate(input: { estimate_id: string }) {
 
   const total_month_eur = Math.round(groups.reduce((sum, g) => sum + g.subtotal_month_eur, 0) * 100) / 100;
   const total_year_eur = Math.round(total_month_eur * 12 * 100) / 100;
-  const calculator_url = buildCalculatorUrl(estimate.services);
+  const service_types = buildCalculatorServiceList(estimate.services);
 
   return {
     estimate_name: estimate.name,
     groups,
     total_month_eur,
     total_year_eur,
-    calculator_url,
+    calculator_url: 'https://calculator.stackit.cloud/',
+    calculator_services: service_types,
     price_source: prices.meta.source,
     price_date: prices.meta.date,
-    note: 'calculator.stackit.cloud link pre-selects service types. Configure quantities and flavors in the browser for a full interactive estimate.',
+    note: `Open calculator.stackit.cloud and add these services: ${service_types.join(', ')}`,
   };
 }
