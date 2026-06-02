@@ -15,7 +15,10 @@
     "test:watch": "vitest",
     "update-prices": "tsx scripts/update-prices.ts"
   },
-  "files": ["dist", "src/pricing/prices.json"],
+  "files": [
+    "dist",
+    "src/pricing/prices.json"
+  ],
   "author": "Thomas Soring",
   "license": "ISC",
   "dependencies": {
@@ -27,5 +30,8 @@
     "tsx": "^4.21.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
