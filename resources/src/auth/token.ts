@@ -161,7 +161,8 @@ function findFreePort(): Promise<number> {
 export async function loginInteractive(): Promise<string> {
   const { authorizationEndpoint, tokenEndpoint } = await getOidcEndpoints();
   const port        = await findFreePort();
-  const redirectUri = `http://localhost:${port}/callback`;
+  // STACKIT OAuth server registers "http://localhost:{port}" (no path) — RFC 8252 loopback
+  const redirectUri = `http://localhost:${port}`;
   const verifier    = b64url(randomBytes(32));
   const challenge   = b64url(createHash('sha256').update(verifier).digest());
   const state       = b64url(randomBytes(16));
@@ -180,7 +181,8 @@ export async function loginInteractive(): Promise<string> {
   // Start server in background — resolves/rejects silently
   const server = createServer(async (req, res) => {
     const reqUrl = new URL(req.url!, `http://localhost:${port}`);
-    if (reqUrl.pathname !== '/callback') { res.end(); return; }
+    // STACKIT redirects to root path or with query params at root
+    if (reqUrl.pathname !== '/' && reqUrl.pathname !== '') { res.end(); return; }
 
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>✓ STACKIT login successful</h2><p>You can close this tab.</p></body></html>');
