@@ -70,7 +70,7 @@ describe('E2E: TYPO3 3-Stage estimate using bundled prices', () => {
     expect(result.groups.map(g => g.name).sort()).toEqual(['Dev', 'Production', 'Staging']);
     expect(result.total_month_eur).toBeGreaterThan(0);
     expect(result.total_year_eur).toBeCloseTo(result.total_month_eur * 12, 0);
-    expect(result.calculator_url).toContain("addService=servers");
+    expect(result.calculator_url).toContain("addService=server");
     expect(result.price_source).toMatch(/^(live|cache|bundle)$/);
 
     // Log summary for visibility

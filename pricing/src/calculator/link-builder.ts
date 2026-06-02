@@ -1,15 +1,16 @@
 import type { EstimateService } from '../types.js';
 
-// apiIdentifier values verified against https://pim.api.stackit.cloud/v1/categories
+// Internal service IDs from calculator.stackit.cloud/assets/data/supported-services.json
+// These are the values the Angular router matches against in getServiceById(id === t).
 const SERVICE_API_ID: Record<string, string> = {
-  'server': 'servers',
+  'server': 'server',
   'object-storage': 'object-storage',
   'block-storage': 'block-storage',
   'ske': 'ske',
   'database-postgres': 'postgresql-flex',
   'database-mariadb': 'mariadb',
   'database-redis': 'redis',
-  'load-balancer': 'alb',
+  'load-balancer': 'application-load-balancer',
   'public-ip': 'public-ip-address',
 };
 

@@ -14,9 +14,9 @@ describe('link-builder', () => {
       { service_key: 'object-storage', service_name: 'Storage', group: 'Prod', config: {}, monthly_cost_eur: 5 },
     ];
     const url = buildCalculatorUrl(services);
-    expect(url).toContain('addService=servers');
+    expect(url).toContain('addService=server');
     expect(url).toContain('addService=object-storage');
-    expect(url.split('addService=servers').length - 1).toBe(1);
+    expect(url.split('addService=server').length - 1).toBe(1);
   });
 
   it('uses correct apiIdentifiers from STACKIT categories API', () => {
@@ -29,7 +29,7 @@ describe('link-builder', () => {
     const url = buildCalculatorUrl(services);
     expect(url).toContain('addService=ske');
     expect(url).toContain('addService=postgresql-flex');
-    expect(url).toContain('addService=alb');
+    expect(url).toContain('addService=application-load-balancer');
     expect(url).toContain('addService=public-ip-address');
   });
 
