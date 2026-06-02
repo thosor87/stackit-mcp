@@ -132,7 +132,8 @@ function buildBlockStorageDefinition(skus: StackitSku[]): ServiceDefinition {
     s.deprecated === 'No' &&
     s.name.toLowerCase().includes('disk volume')
   );
-  const price = sku ? parseMonthlyPrice(sku) : 0;
+  // monthlyPrice = price * 24 * 30 (Gigabyte Hours → per GB per month)
+  const pricePerGbMonth = sku ? parseMonthlyPrice(sku) : 0;
   const meta = SERVICE_META['block-storage'];
 
   return {
@@ -142,7 +143,7 @@ function buildBlockStorageDefinition(skus: StackitSku[]): ServiceDefinition {
     description: meta.description,
     calculator_type: meta.calculator_type,
     fields: [
-      { id: 'quantity', type: 'number', label: 'Quantity (GB)', default: 100, price_month: price, required: true },
+      { id: 'storage_gb', type: 'number', label: 'Storage (GB)', price_per_gb_month: pricePerGbMonth, default: 100, required: true },
     ],
   };
 }
