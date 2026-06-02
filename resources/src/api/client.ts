@@ -7,7 +7,7 @@ const BASE: Record<string, string> = {
   mariadb:         'https://mariadb.api.eu01.stackit.cloud',
   redis:           'https://redis.api.eu01.stackit.cloud',
   ske:             'https://ske.api.eu01.stackit.cloud',
-  objectStorage:   'https://objectstorage.api.eu01.stackit.cloud',
+  objectStorage:   'https://object-storage.api.stackit.cloud',
 };
 
 export async function stackitGet<T>(service: keyof typeof BASE, path: string): Promise<T> {

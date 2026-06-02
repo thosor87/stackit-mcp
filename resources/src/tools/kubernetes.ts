@@ -8,9 +8,18 @@ interface Cluster {
 }
 
 export async function listClusters(projectId: string) {
-  const data = await stackitGet<{ items: Cluster[] }>(
-    'ske', `/v1/projects/${projectId}/clusters`
-  );
+  let data: { items: Cluster[] };
+  try {
+    data = await stackitGet<{ items: Cluster[] }>(
+      'ske', `/v1/projects/${projectId}/clusters`
+    );
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes('403') || msg.includes('not enabled') || msg.includes('404')) {
+      return { clusters: [], note: 'SKE not enabled in this project.' };
+    }
+    throw e;
+  }
   return {
     clusters: (data.items ?? []).map(c => ({
       name: c.name,
