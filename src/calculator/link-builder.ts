@@ -1,15 +1,16 @@
 import type { EstimateService } from '../types.js';
 
-// Maps service_key to the type used in calculator.stackit.cloud ?addService= param.
+// Maps service_key to the apiIdentifier used in calculator.stackit.cloud ?addService= param.
+// Values sourced from https://pim.api.stackit.cloud/v1/categories (product.apiIdentifier)
 const CALCULATOR_TYPE: Record<string, string> = {
-  'server': 'server',
+  'server': 'servers',
   'object-storage': 'object-storage',
-  'ske': 'kubernetes-engine',
-  'database-postgres': 'postgresql',
+  'ske': 'ske',
+  'database-postgres': 'postgresql-flex',
   'database-mariadb': 'mariadb',
   'database-redis': 'redis',
-  'load-balancer': 'load-balancer',
-  'public-ip': 'public-ip',
+  'load-balancer': 'alb',
+  'public-ip': 'public-ip-address',
   'block-storage': 'block-storage',
 };
 
