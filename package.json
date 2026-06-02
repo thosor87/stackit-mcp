@@ -20,7 +20,7 @@
     "src/pricing/prices.json"
   ],
   "author": "Thomas Soring",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.4.1"
