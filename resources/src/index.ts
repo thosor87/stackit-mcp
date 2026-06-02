@@ -2,7 +2,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { loginWithKeyPath, clearToken } from './auth/token.js';
+import { loginWithKeyPath, loginInteractive, clearToken } from './auth/token.js';
 import { listProjects } from './tools/projects.js';
 import { listServers, serverAction } from './tools/servers.js';
 import { listDatabases } from './tools/databases.js';
@@ -15,35 +15,57 @@ const server = new McpServer({ name: 'stackit-resources', version: '0.1.0' });
 
 server.tool(
   'auth_login',
-  'Authenticate with STACKIT using a Service Account Key file. ' +
-  'Checks STACKIT CLI credentials automatically if no path is provided.',
+  'Log in to STACKIT. Without arguments: opens browser for interactive login (same as "stackit auth login"). ' +
+  'With key_path: authenticates via Service Account Key. Auto-detects existing STACKIT CLI session.',
   {
     key_path: z.string().optional().describe(
-      'Path to STACKIT Service Account Key JSON file. ' +
-      'If omitted, uses STACKIT_SERVICE_ACCOUNT_KEY_PATH env var or STACKIT CLI credentials.'
+      'Path to STACKIT Service Account Key JSON (optional — omit for interactive browser login).'
     ),
     private_key_path: z.string().optional().describe(
-      'Path to RSA private key PEM file (only needed if not embedded in the SA key file).'
+      'Path to RSA private key PEM (only needed if not embedded in the SA key file).'
     ),
   },
   async ({ key_path, private_key_path }) => {
+    // SA key path explicitly provided
     if (key_path) {
       await loginWithKeyPath(key_path, private_key_path);
-      return { content: [{ type: 'text', text: 'Authenticated successfully. Token cached for 1 hour.' }] };
+      return { content: [{ type: 'text', text: '✓ Authenticated via Service Account Key. Token cached for 1 hour.' }] };
     }
-    // Try auto-detect (CLI credentials or env var)
+
+    // Try auto-detect first (existing CLI session or SA key env var)
     try {
       const { getAccessToken } = await import('./auth/token.js');
       await getAccessToken();
-      return { content: [{ type: 'text', text: 'Authenticated via STACKIT CLI credentials.' }] };
-    } catch (e) {
-      return {
-        content: [{
-          type: 'text',
-          text: `Not authenticated.\n\nProvide the path to your Service Account Key:\n  auth_login({ key_path: "/path/to/sa-key.json" })\n\nOr set STACKIT_SERVICE_ACCOUNT_KEY_PATH in the MCP environment.`,
-        }],
-      };
-    }
+      return { content: [{ type: 'text', text: '✓ Authenticated (existing STACKIT session detected).' }] };
+    } catch { /* not yet authenticated — proceed with interactive login */ }
+
+    // Interactive PKCE login (same flow as `stackit auth login`)
+    const url = await loginInteractive();
+
+    // Try to auto-open browser (macOS/Linux)
+    const { exec } = await import('child_process');
+    const openCmd = process.platform === 'darwin' ? `open "${url}"` : `xdg-open "${url}"`;
+    exec(openCmd, () => { /* ignore errors */ });
+
+    return {
+      content: [{
+        type: 'text',
+        text: `Opening STACKIT login in your browser...\n\nIf the browser didn't open, copy this URL:\n${url}\n\nAfter logging in, call list_projects or any other tool — the token will be ready.`,
+      }],
+    };
+  }
+);
+
+// In-process default project (survives within one MCP session)
+let defaultProjectId: string | null = null;
+
+server.tool(
+  'set_project',
+  'Set the default STACKIT project for this session. After calling this, all other tools work without needing a project_id.',
+  { project_id: z.string().describe('STACKIT project ID (UUID)') },
+  async ({ project_id }) => {
+    defaultProjectId = project_id;
+    return { content: [{ type: 'text', text: `Default project set to: ${project_id}` }] };
   }
 );
 
@@ -69,12 +91,18 @@ server.tool(
   }
 );
 
+function resolveProject(project_id?: string): string {
+  const id = project_id ?? defaultProjectId;
+  if (!id) throw new Error('No project_id provided. Use set_project first or pass project_id explicitly.');
+  return id;
+}
+
 server.tool(
   'list_servers',
   'List all servers in a STACKIT project with status, flavor, and IPs.',
-  { project_id: z.string().describe('STACKIT project ID') },
+  { project_id: z.string().optional().describe('STACKIT project ID (uses session default if omitted)') },
   async ({ project_id }) => {
-    const result = await listServers(project_id);
+    const result = await listServers(resolveProject(project_id));
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );
@@ -82,9 +110,9 @@ server.tool(
 server.tool(
   'list_databases',
   'List all managed database instances (PostgreSQL Flex, MariaDB, Redis) in a project.',
-  { project_id: z.string().describe('STACKIT project ID') },
+  { project_id: z.string().optional().describe('STACKIT project ID (uses session default if omitted)') },
   async ({ project_id }) => {
-    const result = await listDatabases(project_id);
+    const result = await listDatabases(resolveProject(project_id));
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );
@@ -92,9 +120,9 @@ server.tool(
 server.tool(
   'list_clusters',
   'List STACKIT Kubernetes Engine (SKE) clusters in a project.',
-  { project_id: z.string().describe('STACKIT project ID') },
+  { project_id: z.string().optional().describe('STACKIT project ID (uses session default if omitted)') },
   async ({ project_id }) => {
-    const result = await listClusters(project_id);
+    const result = await listClusters(resolveProject(project_id));
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );
@@ -102,9 +130,9 @@ server.tool(
 server.tool(
   'list_storage',
   'List Object Storage buckets in a STACKIT project.',
-  { project_id: z.string().describe('STACKIT project ID') },
+  { project_id: z.string().optional().describe('STACKIT project ID (uses session default if omitted)') },
   async ({ project_id }) => {
-    const result = await listObjectStorage(project_id);
+    const result = await listObjectStorage(resolveProject(project_id));
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );
@@ -113,7 +141,7 @@ server.tool(
   'server_action',
   'Start, stop, or reboot a STACKIT server. Requires explicit confirmation.',
   {
-    project_id: z.string().describe('STACKIT project ID'),
+    project_id: z.string().optional().describe('STACKIT project ID (uses session default if omitted)'),
     server_id: z.string().describe('Server ID from list_servers'),
     action: z.enum(['start', 'stop', 'reboot']).describe('Action to perform'),
     confirm: z.boolean().describe('Must be true to execute — prevents accidental actions'),
@@ -122,7 +150,7 @@ server.tool(
     if (!confirm) {
       return { content: [{ type: 'text', text: `Action not executed. Set confirm: true to ${action} server ${server_id}.` }] };
     }
-    const result = await serverAction(project_id, server_id, action);
+    const result = await serverAction(resolveProject(project_id), server_id, action);
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );
