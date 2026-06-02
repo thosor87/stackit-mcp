@@ -71,13 +71,14 @@ server.tool(
 
 server.tool(
   'save_estimate',
-  'Save a STACKIT estimate as .md and .csv files to disk (default: /tmp)',
+  'Save a STACKIT estimate to disk. Default: Excel (.xlsx) with formatted tables and bar chart. Optional: csv, md.',
   {
     estimate_id: z.string().describe('Estimate ID from create_estimate'),
     directory: z.string().optional().describe('Target directory (default: ~/Downloads)'),
+    formats: z.array(z.enum(['xlsx', 'csv', 'md'])).optional().describe('Output formats (default: ["xlsx"])'),
   },
-  async ({ estimate_id, directory }) => {
-    const result = await handleSaveEstimate({ estimate_id, directory });
+  async ({ estimate_id, directory, formats }) => {
+    const result = await handleSaveEstimate({ estimate_id, directory, formats });
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );

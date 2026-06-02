@@ -2,7 +2,7 @@ import { getEstimate } from '../estimate/store.js';
 import { loadPrices } from '../pricing/loader.js';
 import type { EstimateService } from '../types.js';
 
-interface GroupSummary {
+export interface GroupSummary {
   name: string;
   services: Array<{
     service_key: string;
