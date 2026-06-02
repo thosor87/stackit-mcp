@@ -126,6 +126,27 @@ function buildSimpleDefinition(serviceKey: string, product: string, skus: Stacki
   };
 }
 
+function buildBlockStorageDefinition(skus: StackitSku[]): ServiceDefinition {
+  const sku = skus.find(s =>
+    s.product === 'Block Storage' &&
+    s.deprecated === 'No' &&
+    s.name.toLowerCase().includes('disk volume')
+  );
+  const price = sku ? parseMonthlyPrice(sku) : 0;
+  const meta = SERVICE_META['block-storage'];
+
+  return {
+    service_key: 'block-storage',
+    name: 'Block Storage',
+    category: 'Storage',
+    description: meta.description,
+    calculator_type: meta.calculator_type,
+    fields: [
+      { id: 'quantity', type: 'number', label: 'Quantity (GB)', default: 100, price_month: price, required: true },
+    ],
+  };
+}
+
 export function buildRegistry(skus: StackitSku[]): ServiceRegistry {
   const registry = new Map<string, ServiceDefinition>();
   registry.set('server', buildServerDefinition(skus));
@@ -135,8 +156,8 @@ export function buildRegistry(skus: StackitSku[]): ServiceRegistry {
   registry.set('database-mariadb', buildDatabaseDefinition('database-mariadb', 'MariaDB', skus));
   registry.set('database-redis', buildDatabaseDefinition('database-redis', 'Redis', skus));
   registry.set('load-balancer', buildSimpleDefinition('load-balancer', 'Application Load Balancer', skus));
-  registry.set('public-ip', buildSimpleDefinition('public-ip', 'Public IP', skus));
-  registry.set('block-storage', buildSimpleDefinition('block-storage', 'Block Storage', skus));
+  registry.set('public-ip', buildSimpleDefinition('public-ip', 'Public IP Address', skus));
+  registry.set('block-storage', buildBlockStorageDefinition(skus));
   return registry;
 }
 
