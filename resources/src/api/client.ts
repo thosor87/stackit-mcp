@@ -1,7 +1,7 @@
 import { getAccessToken } from '../auth/token.js';
 
 const BASE: Record<string, string> = {
-  resourceManager: 'https://resource-manager.api.eu01.stackit.cloud',
+  resourceManager: 'https://resource-manager.api.stackit.cloud',
   iaas:            'https://iaas.api.eu01.stackit.cloud',
   postgresFlex:    'https://postgres-flex.api.eu01.stackit.cloud',
   mariadb:         'https://mariadb.api.eu01.stackit.cloud',
