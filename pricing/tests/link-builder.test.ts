@@ -1,42 +1,39 @@
 import { describe, it, expect } from 'vitest';
-import { buildCalculatorUrl } from '../src/calculator/link-builder.js';
+import { buildCalculatorServiceList, CALCULATOR_BASE_URL } from '../src/calculator/link-builder.js';
 import type { EstimateService } from '../src/types.js';
 
 describe('link-builder', () => {
-  it('returns base URL for empty services', () => {
-    expect(buildCalculatorUrl([])).toBe('https://calculator.stackit.cloud/');
+  it('returns empty list for empty services', () => {
+    expect(buildCalculatorServiceList([])).toEqual([]);
   });
 
-  it('adds addService param for each unique service type', () => {
+  it('returns unique display names', () => {
     const services: EstimateService[] = [
       { service_key: 'server', service_name: 'Server', group: 'Prod', config: {}, monthly_cost_eur: 54 },
       { service_key: 'server', service_name: 'Server', group: 'Dev', config: {}, monthly_cost_eur: 27 },
       { service_key: 'object-storage', service_name: 'Storage', group: 'Prod', config: {}, monthly_cost_eur: 5 },
     ];
-    const url = buildCalculatorUrl(services);
-    expect(url).toContain('addService=server');
-    expect(url).toContain('addService=object-storage');
-    expect(url.split('addService=server').length - 1).toBe(1);
+    const list = buildCalculatorServiceList(services);
+    expect(list).toContain('Server');
+    expect(list).toContain('Object Storage');
+    expect(list.filter(s => s === 'Server').length).toBe(1);
   });
 
-  it('uses correct apiIdentifiers from STACKIT categories API', () => {
+  it('maps all supported service keys', () => {
     const services: EstimateService[] = [
       { service_key: 'ske', service_name: 'SKE', group: 'Prod', config: {}, monthly_cost_eur: 72 },
       { service_key: 'database-postgres', service_name: 'PG', group: 'Prod', config: {}, monthly_cost_eur: 90 },
       { service_key: 'load-balancer', service_name: 'ALB', group: 'Prod', config: {}, monthly_cost_eur: 18 },
       { service_key: 'public-ip', service_name: 'IP', group: 'Prod', config: {}, monthly_cost_eur: 3 },
     ];
-    const url = buildCalculatorUrl(services);
-    expect(url).toContain('addService=ske');
-    expect(url).toContain('addService=postgresql-flex');
-    expect(url).toContain('addService=application-load-balancer');
-    expect(url).toContain('addService=public-ip-address');
+    const list = buildCalculatorServiceList(services);
+    expect(list).toContain('STACKIT Kubernetes Engine');
+    expect(list).toContain('PostgreSQL Flex');
+    expect(list).toContain('Application Load Balancer');
+    expect(list).toContain('Public IP Address');
   });
 
-  it('is a valid URL', () => {
-    const services: EstimateService[] = [
-      { service_key: 'server', service_name: 'Server', group: 'Prod', config: {}, monthly_cost_eur: 54 },
-    ];
-    expect(() => new URL(buildCalculatorUrl(services))).not.toThrow();
+  it('exports the calculator base URL constant', () => {
+    expect(CALCULATOR_BASE_URL).toBe('https://calculator.stackit.cloud/');
   });
 });

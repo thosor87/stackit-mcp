@@ -1,33 +1,28 @@
 import type { EstimateService } from '../types.js';
 
-// Internal service IDs from calculator.stackit.cloud/assets/data/supported-services.json
-// These are the values the Angular router matches against in getServiceById(id === t).
-const SERVICE_API_ID: Record<string, string> = {
-  'server': 'server',
-  'object-storage': 'object-storage',
-  'block-storage': 'block-storage',
-  'ske': 'ske',
-  'database-postgres': 'postgresql-flex',
-  'database-mariadb': 'mariadb',
-  'database-redis': 'redis',
-  'load-balancer': 'application-load-balancer',
-  'public-ip': 'public-ip-address',
+// Human-readable names for the services in an estimate.
+const SERVICE_DISPLAY_NAME: Record<string, string> = {
+  'server': 'Server',
+  'object-storage': 'Object Storage',
+  'block-storage': 'Block Storage',
+  'ske': 'STACKIT Kubernetes Engine',
+  'database-postgres': 'PostgreSQL Flex',
+  'database-mariadb': 'MariaDB',
+  'database-redis': 'Redis',
+  'load-balancer': 'Application Load Balancer',
+  'public-ip': 'Public IP Address',
 };
 
-const BASE_URL = 'https://calculator.stackit.cloud/';
+export const CALCULATOR_BASE_URL = 'https://calculator.stackit.cloud/';
 
-// Builds a calculator deep link. The ?addService= params work via Angular in-app
-// navigation (i.e. when the calculator tab is already open). On a fresh page load
-// the STACKIT calculator may throw a race-condition error — reloading once fixes it.
-export function buildCalculatorUrl(services: EstimateService[]): string {
-  const types = [...new Set(
+// Returns the unique service display names used in an estimate.
+// Note: calculator.stackit.cloud has no external deep-link API — the ?addService=
+// parameter is an in-app Angular router feature and fails on fresh page loads due
+// to a race condition in their service registry loading. Use the base URL.
+export function buildCalculatorServiceList(services: EstimateService[]): string[] {
+  return [...new Set(
     services
-      .map(s => SERVICE_API_ID[s.service_key])
+      .map(s => SERVICE_DISPLAY_NAME[s.service_key])
       .filter((t): t is string => t !== undefined)
   )];
-
-  if (types.length === 0) return BASE_URL;
-
-  const params = types.map(t => `addService=${encodeURIComponent(t)}`).join('&');
-  return `${BASE_URL}?${params}`;
 }

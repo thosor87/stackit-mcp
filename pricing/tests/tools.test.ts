@@ -130,7 +130,7 @@ describe('tools', () => {
       expect(result.total_month_eur).toBeGreaterThan(0);
       expect(result.total_year_eur).toBeCloseTo(result.total_month_eur * 12, 1);
       expect(result.calculator_url).toContain('calculator.stackit.cloud');
-      expect(result.calculator_url).toContain("addService=server");
+      expect(result.calculator_url).toBe("https://calculator.stackit.cloud/");
       expect(result.groups).toHaveLength(1);
       expect(result.groups[0].name).toBe('Prod');
     });
