@@ -13,6 +13,7 @@ MCP servers for STACKIT — letting Claude and other AI assistants work with STA
 |---------|-------------|-----|
 | [pricing/](pricing/) | Multi-stage cost estimates with live pricing and Excel export | [![npm](https://img.shields.io/npm/v/%40stackit-mcp%2Fpricing?style=flat-square)](https://www.npmjs.com/package/@stackit-mcp/pricing) |
 | [resources/](resources/) | List and manage STACKIT resources with interactive browser login | [![npm](https://img.shields.io/npm/v/%40stackit-mcp%2Fresources?style=flat-square)](https://www.npmjs.com/package/@stackit-mcp/resources) |
+| [partner/](partner/) | Customer Relations from the STACKIT Partner Portal | — (local only) |
 
 ---
 
@@ -70,6 +71,12 @@ stackit-mcp/                    github.com/thosor87/stackit-mcp
 │   │   └── estimate/           In-memory estimate store
 │   ├── tests/                  32 tests (vitest)
 │   ├── dist/                   Compiled output
+│   └── package.json
+├── partner/                    @stackit-mcp/partner
+│   ├── src/
+│   │   ├── auth/               PKCE login (stackit-partner-portal-prod client)
+│   │   ├── api/                HTTP client for cost.api.stackit.cloud
+│   │   └── tools/              list_customers
 │   └── package.json
 └── docs/                       GitHub Pages (calculator launcher)
 ```
