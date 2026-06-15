@@ -97,16 +97,23 @@ Returns all customer organizations with cost data for a given period.
   "customer_account_id": "uuid",
   "name": "Organization Name",
   "partnership_status": "ACTIVE",
-  "gross_eur": 12345.67,
+  "list_eur": 12345.67,
   "discount_eur": 7654.32,
   "net_eur": 4691.35,
+  "discount_pct": 62.0,
   "project_count": 8,
   "top_project": "project-name-prod",
   "projects": ["project-name-prod", "project-name-dev", "..."]
 }
 ```
 
-Customers are sorted by `gross_eur` descending. Names are resolved live from the STACKIT Partner API — no local mapping file needed.
+Field semantics per STACKIT API spec:
+- `list_eur` — gross list price before discounts (`totalCharge + totalDiscount`)
+- `discount_eur` — discount amount applied (`totalDiscount`)
+- `net_eur` — what the customer actually pays (`totalCharge`, already "including discounts" per spec)
+- `discount_pct` — discount as % of list price
+
+Customers are sorted by `list_eur` descending. Names are resolved live from the STACKIT Partner API — no local mapping file needed.
 
 ---
 

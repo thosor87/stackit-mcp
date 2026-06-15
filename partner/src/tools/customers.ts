@@ -5,8 +5,8 @@ interface ApiProjectEntry {
   customerAccountId: string;
   projectId: string;
   projectName: string;
-  totalCharge: number;   // in EUR cents
-  totalDiscount: number; // in EUR cents
+  totalCharge: number;   // net charge after discounts, in EUR cents (spec: "Total charge including discounts")
+  totalDiscount: number; // discount amount subtracted from list price, in EUR cents
   reportData: unknown[];
 }
 
@@ -29,9 +29,10 @@ export interface CustomerSummary {
   customer_account_id: string;
   name: string;
   partnership_status: string;
-  gross_eur: number;
-  discount_eur: number;
-  net_eur: number;
+  list_eur: number;      // gross list price = totalCharge + totalDiscount
+  discount_eur: number;  // discount amount (totalDiscount)
+  net_eur: number;       // what customer pays (totalCharge, already includes discounts per spec)
+  discount_pct: number;  // discount as % of list price
   project_count: number;
   top_project: string;
   projects: string[];
@@ -76,23 +77,27 @@ export async function listCustomers(
 
   const customers: CustomerSummary[] = Array.from(byCustomer.entries())
     .map(([id, c]) => {
-      const grossEur    = c.chargeCents / 100;
+      // totalCharge = net (spec: "including discounts"), totalDiscount = discount amount
+      const netEur      = c.chargeCents / 100;
       const discountEur = c.discountCents / 100;
+      const listEur     = netEur + discountEur;
+      const discountPct = listEur > 0 ? Math.round((discountEur / listEur) * 10000) / 100 : 0;
       const projectsByCharge = [...c.projects.entries()].sort((a, b) => b[1] - a[1]);
       const partnership = partnerships.get(id);
       return {
         customer_account_id: id,
-        name:             partnership?.organizationName ?? id,
+        name:               partnership?.organizationName ?? id,
         partnership_status: partnership?.partnershipStatus ?? 'UNKNOWN',
-        gross_eur:      Math.round(grossEur * 100) / 100,
-        discount_eur:   Math.round(discountEur * 100) / 100,
-        net_eur:        Math.round((grossEur - discountEur) * 100) / 100,
-        project_count:  c.projects.size,
-        top_project:    projectsByCharge[0]?.[0] ?? '',
-        projects:       projectsByCharge.map(([name]) => name),
+        list_eur:           Math.round(listEur * 100) / 100,
+        discount_eur:       Math.round(discountEur * 100) / 100,
+        net_eur:            Math.round(netEur * 100) / 100,
+        discount_pct:       discountPct,
+        project_count:      c.projects.size,
+        top_project:        projectsByCharge[0]?.[0] ?? '',
+        projects:           projectsByCharge.map(([name]) => name),
       };
     })
-    .sort((a, b) => b.gross_eur - a.gross_eur);
+    .sort((a, b) => b.list_eur - a.list_eur);
 
   return { customers, from, to, total_customers: customers.length };
 }
