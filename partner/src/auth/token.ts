@@ -41,7 +41,10 @@ function saveToken(token: StoredToken): void {
 async function getOidcEndpoints(): Promise<{ authorizationEndpoint: string; tokenEndpoint: string }> {
   const resp = await fetch(OIDC_DISCOVERY);
   if (!resp.ok) throw new Error('Failed to fetch OIDC discovery');
-  const cfg = await resp.json() as { authorization_endpoint: string; token_endpoint: string };
+  const cfg = await resp.json() as { authorization_endpoint?: string; token_endpoint?: string };
+  if (!cfg.authorization_endpoint || !cfg.token_endpoint) {
+    throw new Error('OIDC discovery response missing required endpoints');
+  }
   return { authorizationEndpoint: cfg.authorization_endpoint, tokenEndpoint: cfg.token_endpoint };
 }
 
@@ -83,16 +86,16 @@ export async function loginInteractive(): Promise<string> {
     const reqUrl = new URL(req.url!, `http://localhost:${port}`);
     if (reqUrl.pathname !== '/' && reqUrl.pathname !== '') { res.end(); return; }
 
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>&#10003; STACKIT Partner Portal login successful</h2><p>You can close this tab.</p></body></html>');
-    server.close();
-
     const code     = reqUrl.searchParams.get('code');
     const gotState = reqUrl.searchParams.get('state');
     if (!code || gotState !== state) {
+      res.writeHead(400, { 'Content-Type': 'text/html' });
+      res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>Login failed</h2><p>Invalid callback. Please try again.</p></body></html>');
+      server.close();
       process.stderr.write('[stackit-partner] OAuth callback: invalid state\n');
       return;
     }
+
     try {
       const tokenResp = await fetch(tokenEndpoint, {
         method: 'POST',
@@ -106,6 +109,9 @@ export async function loginInteractive(): Promise<string> {
         }),
       });
       if (!tokenResp.ok) {
+        res.writeHead(400, { 'Content-Type': 'text/html' });
+        res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>Login failed</h2><p>Token exchange failed. Please try again.</p></body></html>');
+        server.close();
         process.stderr.write(`[stackit-partner] Token exchange failed: ${await tokenResp.text()}\n`);
         return;
       }
@@ -114,8 +120,14 @@ export async function loginInteractive(): Promise<string> {
         access_token: data.access_token,
         expires_at:   Date.now() + (data.expires_in ?? 3600) * 1000,
       });
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>✓ STACKIT Partner Portal login successful</h2><p>You can close this tab.</p></body></html>');
+      server.close();
       process.stderr.write('[stackit-partner] ✓ Token saved\n');
     } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'text/html' });
+      res.end('<html><body>Internal error</body></html>');
+      server.close();
       process.stderr.write(`[stackit-partner] Token error: ${e}\n`);
     }
   });
