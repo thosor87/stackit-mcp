@@ -2,7 +2,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { loginInteractive, clearToken } from './auth/token.js';
+import { loginInteractive, clearToken, saveTokenFromRaw } from './auth/token.js';
 import { listCustomers } from './tools/customers.js';
 
 const server = new McpServer({ name: 'stackit-partner', version: '0.1.0' });
@@ -32,6 +32,16 @@ server.tool(
         text: `Opening STACKIT Partner Portal login in your browser...\n\nIf the browser didn't open, copy this URL:\n${url}\n\nAfter logging in, call list_customers — the token will be ready.`,
       }],
     };
+  }
+);
+
+server.tool(
+  'auth_set_token',
+  'Manually set a Bearer token copied from the browser (Network tab → Authorization header). The token expiry is parsed from the JWT automatically.',
+  { token: z.string().describe('Bearer token value (without the "Bearer " prefix)') },
+  async ({ token }) => {
+    saveTokenFromRaw(token.replace(/^Bearer\s+/i, ''));
+    return { content: [{ type: 'text', text: '✓ Token saved. Call list_customers to verify.' }] };
   }
 );
 

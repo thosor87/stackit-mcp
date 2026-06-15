@@ -147,6 +147,17 @@ export async function getAccessToken(): Promise<string> {
   );
 }
 
+export function saveTokenFromRaw(bearerToken: string): void {
+  let expiresAt = Date.now() + 3600_000;
+  try {
+    const payload = bearerToken.split('.')[1];
+    const padded = payload + '='.repeat((4 - payload.length % 4) % 4);
+    const data = JSON.parse(Buffer.from(padded, 'base64url').toString('utf8')) as { exp?: number };
+    if (data.exp) expiresAt = data.exp * 1000;
+  } catch { /* use 1h default if JWT parse fails */ }
+  saveToken({ access_token: bearerToken, expires_at: expiresAt });
+}
+
 export function clearToken(): void {
   memToken = null;
   try {
