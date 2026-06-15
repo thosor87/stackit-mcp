@@ -5,13 +5,11 @@ MCP server for the STACKIT Partner Portal — lets Claude query customer relatio
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-green?style=flat-square&logo=node.js)](https://nodejs.org)
 
-> **Local only** — not published to npm. Intended for internal use by STACKIT resellers and partners.
-
 ---
 
 ## Features
 
-- **Customer list with costs** — gross, discount, and net per customer for any date range
+- **Customer list with costs** — list price, discount, and net per customer for any date range
 - **Project breakdown** — all projects per customer, sorted by spend
 - **Live partnership names** — resolved from the STACKIT Partner API, no manual mapping
 - **Browser-based login** — PKCE OAuth flow, no credentials in code or config files
@@ -27,17 +25,36 @@ MCP server for the STACKIT Partner Portal — lets Claude query customer relatio
 - A STACKIT Partner Portal account with reseller access
 - Your partner organization ID (visible in the Partner Portal URL)
 
-### Build
+### Via Claude Code CLI
 
 ```bash
-cd partner
-npm install
-npm run build
+claude mcp add stackit-partner -- npx -y @stackit-mcp/partner@latest
 ```
 
-### Configure Claude Code
+Then set your org ID in `~/.claude.json`:
 
-Add to `~/.claude.json` under `mcpServers`:
+```json
+"stackit-partner": {
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "@stackit-mcp/partner@latest"],
+  "env": {
+    "STACKIT_PARTNER_ORG_ID": "<your-partner-org-id>"
+  }
+}
+```
+
+The org ID is read from the environment at runtime — never stored in the repository.
+
+### From source
+
+```bash
+git clone https://github.com/thosor87/stackit-mcp.git
+cd stackit-mcp/partner
+npm install && npm run build
+```
+
+Point your MCP client at the local build:
 
 ```json
 "stackit-partner": {
@@ -49,8 +66,6 @@ Add to `~/.claude.json` under `mcpServers`:
   }
 }
 ```
-
-The org ID is read from the environment at runtime — never stored in the repository.
 
 ---
 
