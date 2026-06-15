@@ -1,0 +1,32 @@
+{
+  "name": "@stackit-mcp/partner",
+  "version": "0.1.0",
+  "description": "MCP server for the STACKIT Partner Portal (Customer Relations).",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "stackit-partner": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "files": ["dist"],
+  "author": "Thomas Soring",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
