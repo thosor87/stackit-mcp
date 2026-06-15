@@ -149,5 +149,8 @@ export async function getAccessToken(): Promise<string> {
 
 export function clearToken(): void {
   memToken = null;
-  try { writeFileSync(CACHE_FILE, '{}'); } catch { /* ignore */ }
+  try {
+    mkdirSync(CACHE_DIR, { recursive: true });
+    writeFileSync(CACHE_FILE, JSON.stringify({ access_token: '', expires_at: 0 }), { mode: 0o600 });
+  } catch { /* ignore */ }
 }

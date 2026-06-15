@@ -23,9 +23,9 @@ server.tool(
   {},
   async () => {
     const url = await loginInteractive();
-    const { exec } = await import('child_process');
-    const openCmd = process.platform === 'darwin' ? `open "${url}"` : `xdg-open "${url}"`;
-    exec(openCmd, () => { /* ignore errors */ });
+    const { execFile } = await import('child_process');
+    const cmd = process.platform === 'darwin' ? 'open' : 'xdg-open';
+    execFile(cmd, [url], () => { /* ignore errors */ });
     return {
       content: [{
         type: 'text',
