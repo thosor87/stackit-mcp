@@ -13,17 +13,26 @@ MCP servers for STACKIT — letting Claude and other AI assistants work with STA
 |---------|-------------|-----|
 | [pricing/](pricing/) | Multi-stage cost estimates with live pricing and Excel export | [![npm](https://img.shields.io/npm/v/%40stackit-mcp%2Fpricing?style=flat-square)](https://www.npmjs.com/package/@stackit-mcp/pricing) |
 | [resources/](resources/) | List and manage STACKIT resources with interactive browser login | [![npm](https://img.shields.io/npm/v/%40stackit-mcp%2Fresources?style=flat-square)](https://www.npmjs.com/package/@stackit-mcp/resources) |
-| [partner/](partner/) | Customer Relations from the STACKIT Partner Portal | — (local only) |
+| [partner/](partner/) | Customer cost data from the STACKIT Partner Portal (resellers only) | [![npm](https://img.shields.io/npm/v/%40stackit-mcp%2Fpartner?style=flat-square)](https://www.npmjs.com/package/@stackit-mcp/partner) |
 
 ---
 
 ## Quick start
 
-### Install all packages
-
 ```bash
 # Pricing estimates
 claude mcp add stackit-pricing -- npx -y @stackit-mcp/pricing@latest
+
+# Resource overview (requires STACKIT login)
+claude mcp add stackit-resources -- npx -y @stackit-mcp/resources@latest
+
+# Partner Portal — customer cost data (resellers only, requires partner org ID)
+claude mcp add stackit-partner -- npx -y @stackit-mcp/partner@latest
+```
+
+For `stackit-partner`, add your partner org ID to `~/.claude.json`:
+```json
+"stackit-partner": { "env": { "STACKIT_PARTNER_ORG_ID": "<your-org-id>" } }
 ```
 
 ### Example conversations
@@ -56,6 +65,34 @@ Cost estimates for STACKIT cloud services — directly in Claude, Cursor, or VS 
 **Export:** `.xlsx` with two formatted sheets and color scale, `.csv`, `.md`
 
 → [Full documentation](pricing/README.md)
+
+---
+
+## @stackit-mcp/resources
+
+List and manage STACKIT cloud resources — servers, databases, storage, Kubernetes clusters, projects.
+
+[![Install in Claude Code](https://img.shields.io/badge/Claude_Code-Install-CC785C?style=flat-square&logo=anthropic&logoColor=white)](resources/#claude-code)
+
+**Tools:** `list_projects` · `set_project` · `list_servers` · `list_databases` · `list_storage` · `list_clusters` · `server_action`
+
+**Auth:** Browser-based PKCE login via `accounts.stackit.cloud` — no credentials in config.
+
+→ [Full documentation](resources/README.md)
+
+---
+
+## @stackit-mcp/partner
+
+Query customer cost data from the STACKIT Partner Portal — for STACKIT resellers only.
+
+**Tools:** `list_customers` · `auth_login` · `auth_logout`
+
+**Requires:** STACKIT Partner Portal access + partner org ID in `STACKIT_PARTNER_ORG_ID` env var.
+
+**Cost fields:** `list_eur` (gross list price), `discount_eur`, `net_eur` (what customer pays), `discount_pct` — resolved via live partnership names, no local mapping needed.
+
+→ [Full documentation](partner/README.md)
 
 ---
 
