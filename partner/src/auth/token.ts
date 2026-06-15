@@ -8,13 +8,16 @@ const CACHE_DIR  = join(homedir(), '.cache', 'stackit-mcp');
 const CACHE_FILE = join(CACHE_DIR, 'partner-auth.json');
 
 const OIDC_DISCOVERY = 'https://accounts.stackit.cloud/.well-known/openid-configuration';
-const CLIENT_ID      = 'stackit-partner-portal-prod';
-const SCOPES         = 'email openid';
+const TOKEN_ENDPOINT = 'https://service.api.eu01.stackit.cloud/token';
+// Same public CLI client as stackit-resources — localhost redirect URIs are registered for this client
+const CLIENT_ID      = 'stackit-cli-0000-0000-000000000001';
+const SCOPES         = 'openid offline_access email';
 const CALLBACK_PORTS = [8010, 8011, 8012, 8013];
 
 interface StoredToken {
   access_token: string;
   expires_at: number;
+  refresh_token?: string;
 }
 
 let memToken: StoredToken | null = null;
@@ -115,10 +118,11 @@ export async function loginInteractive(): Promise<string> {
         process.stderr.write(`[stackit-partner] Token exchange failed: ${await tokenResp.text()}\n`);
         return;
       }
-      const data = await tokenResp.json() as { access_token: string; expires_in?: number };
+      const data = await tokenResp.json() as { access_token: string; expires_in?: number; refresh_token?: string };
       saveToken({
-        access_token: data.access_token,
-        expires_at:   Date.now() + (data.expires_in ?? 3600) * 1000,
+        access_token:  data.access_token,
+        expires_at:    Date.now() + (data.expires_in ?? 3600) * 1000,
+        refresh_token: data.refresh_token,
       });
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end('<html><body style="font-family:sans-serif;padding:2rem"><h2>✓ STACKIT Partner Portal login successful</h2><p>You can close this tab.</p></body></html>');
@@ -139,9 +143,43 @@ export async function loginInteractive(): Promise<string> {
   return url;
 }
 
+async function refreshAccessToken(token: StoredToken): Promise<string | null> {
+  if (!token.refresh_token) return null;
+  try {
+    const resp = await fetch(TOKEN_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type:    'refresh_token',
+        refresh_token: token.refresh_token,
+        client_id:     CLIENT_ID,
+      }),
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json() as { access_token: string; expires_in?: number; refresh_token?: string };
+    const refreshed: StoredToken = {
+      access_token:  data.access_token,
+      expires_at:    Date.now() + (data.expires_in ?? 3600) * 1000,
+      refresh_token: data.refresh_token ?? token.refresh_token,
+    };
+    saveToken(refreshed);
+    return refreshed.access_token;
+  } catch { return null; }
+}
+
 export async function getAccessToken(): Promise<string> {
   const cached = loadCachedToken();
   if (cached) return cached.access_token;
+
+  // Try refresh token from expired cached token
+  try {
+    const expired = JSON.parse(readFileSync(CACHE_FILE, 'utf8')) as StoredToken;
+    if (expired.refresh_token) {
+      const refreshed = await refreshAccessToken(expired);
+      if (refreshed) return refreshed;
+    }
+  } catch { /* no cache or refresh failed */ }
+
   throw new Error(
     'Not authenticated. Use the auth_login tool to log in to the STACKIT Partner Portal.'
   );
