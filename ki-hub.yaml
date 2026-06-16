@@ -9,5 +9,10 @@ anwendungsfaelle:
   - Mehrstufige Kostenschätzung mit Live-Pricing und Excel-Export
   - STACKIT-Ressourcen (Projekte, Server, DBs, Storage) auflisten und verwalten
   - Kundenkostendaten aus dem STACKIT Partner-Portal (Reseller)
+beispiele:
+  - "Erstelle eine Kostenschätzung für 3 VMs mit je 4 vCPU und 16 GB RAM in eu01 und exportiere sie als Excel."
+  - "Liste alle STACKIT-Projekte und ihre Server auf."
+  - "Welche Datenbanken laufen im Projekt CoolAI und welchen Status haben sie?"
+  - "Zeig die Kundenkosten aus dem Partner-Portal für den letzten Monat."
 leitplanken: Keine Credentials im Code; Login interaktiv im Browser; Partner-Org-ID nur via Env.
 links: { repo: https://github.com/thosor87/stackit-mcp }
