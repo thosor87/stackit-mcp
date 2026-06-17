@@ -4,6 +4,7 @@ status: produktiv
 owner: thomas.soring@btc-ag.com
 cluster: [Cloud, MCP, STACKIT]
 technik: Node.js ≥18; drei npm-Pakete (@stackit-mcp/pricing, /resources, /partner); STACKIT-API; interaktiver Browser-Login.
+techstack: [Node.js, MCP, STACKIT API]
 nutzer: Cloud-Architekten, Vertrieb und Squads, die STACKIT-Kosten kalkulieren und Bestände direkt aus dem KI-Chat prüfen.
 anwendungsfaelle:
   - Mehrstufige Kostenschätzung mit Live-Pricing und Excel-Export
