@@ -1,5 +1,6 @@
 import { partnerGet } from '../api/client.js';
 import { getPartnerships } from '../api/partnerships.js';
+import { previousMonthRange } from '../util/dates.js';
 
 interface ApiProjectEntry {
   customerAccountId: string;
@@ -8,21 +9,6 @@ interface ApiProjectEntry {
   totalCharge: number;   // net charge after discounts, in EUR cents (spec: "Total charge including discounts")
   totalDiscount: number; // discount amount subtracted from list price, in EUR cents
   reportData: unknown[];
-}
-
-function previousMonthRange(): { from: string; to: string } {
-  const now = new Date();
-  const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastOfPrevMonth  = new Date(firstOfThisMonth.getTime() - 1);
-  const firstOfPrevMonth = new Date(lastOfPrevMonth.getFullYear(), lastOfPrevMonth.getMonth(), 1);
-
-  const fmt = (d: Date) => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  };
-  return { from: fmt(firstOfPrevMonth), to: fmt(lastOfPrevMonth) };
 }
 
 export interface CustomerSummary {

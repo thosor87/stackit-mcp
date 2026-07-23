@@ -4,8 +4,9 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { loginInteractive, clearToken, saveTokenFromRaw } from './auth/token.js';
 import { listCustomers } from './tools/customers.js';
+import { listCustomerProjects } from './tools/customer-projects.js';
 
-const server = new McpServer({ name: 'stackit-partner', version: '0.1.0' });
+const server = new McpServer({ name: 'stackit-partner', version: '0.2.0' });
 
 function getOrgId(): string {
   const id = process.env['STACKIT_PARTNER_ORG_ID'];
@@ -67,6 +68,23 @@ server.tool(
   },
   async ({ from, to, granularity }) => {
     const result = await listCustomers(getOrgId(), { from, to, granularity });
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+server.tool(
+  'list_customer_projects',
+  'List per-project cloud consumption (cost) for the partner org, optionally filtered to a single customer. Returns list price, net (after partner discount), discount amount and discount % per project.',
+  {
+    customer_account_id: z.string().optional().describe('Filter to a single customer account (UUID). Omit for all customers.'),
+    from: z.string().optional().describe('Start date YYYY-MM-DD (default: first day of previous month)'),
+    to:   z.string().optional().describe('End date YYYY-MM-DD (default: last day of previous month)'),
+    granularity: z.enum(['daily', 'monthly']).optional().describe('Cost granularity (default: monthly)'),
+  },
+  async ({ customer_account_id, from, to, granularity }) => {
+    const result = await listCustomerProjects(getOrgId(), {
+      customerAccountId: customer_account_id, from, to, granularity,
+    });
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );
