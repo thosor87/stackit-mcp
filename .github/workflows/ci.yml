@@ -39,3 +39,20 @@ jobs:
           cache-dependency-path: resources/package-lock.json
       - run: npm ci
       - run: npm run build
+      - run: npm test
+
+  partner:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: partner
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: partner/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
