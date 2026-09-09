@@ -35,6 +35,13 @@
   "engines": {
     "node": ">=18"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=20.0.0",
+      "onFail": "warn"
+    }
+  },
   "overrides": {
     "uuid": "^11.1.1"
   }

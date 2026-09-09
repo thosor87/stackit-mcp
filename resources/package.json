@@ -30,5 +30,12 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=20.0.0",
+      "onFail": "warn"
+    }
   }
 }
